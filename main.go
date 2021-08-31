@@ -2,6 +2,8 @@ package main
 
 import (
 	"database/sql"
+	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/mattn/go-sqlite3"
@@ -37,6 +39,12 @@ func query(query string) (*sql.Rows, error) {
 }
 
 func main() {
+	if _, err := os.Stat(db_filename); os.IsNotExist(err) {
+		log.Println("Creating database...")
+		if err := exec(init_db_stmt); err != nil {
+			panic(err)
+		}
+	}
 	r := gin.Default()
 	r.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
