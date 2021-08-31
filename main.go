@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"flag"
 	"log"
 	"os"
 
@@ -39,6 +40,13 @@ func query(query string) (*sql.Rows, error) {
 }
 
 func main() {
+	prune_db_on_launch := flag.Bool("prune", false, "prune database on launch")
+	flag.Parse()
+	if *prune_db_on_launch {
+		log.Println("Pruning database...")
+		os.Remove(db_filename)
+	}
+
 	if _, err := os.Stat(db_filename); os.IsNotExist(err) {
 		log.Println("Creating database...")
 		if err := exec(init_db_stmt); err != nil {
