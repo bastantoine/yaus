@@ -54,10 +54,24 @@ func main() {
 		}
 	}
 	r := gin.Default()
-	r.GET("/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
+	r.GET("/:hash", func(c *gin.Context) {
+		hash := c.Param("hash")
+		rows, err := query("SELECT link FROM links WHERE handler = '" + hash + "'")
+		if err != nil {
+			panic(err)
+		}
+		defer rows.Close()
+		if rows.Next() {
+			var link string
+			if err := rows.Scan(&link); err != nil {
+				panic(err)
+			}
+			c.Redirect(302, link)
+		}
+		c.String(404, "No link found for "+hash)
+	})
+	r.NoRoute(func(c *gin.Context) {
+		c.String(404, "Not found")
 	})
 	r.Run()
 }
